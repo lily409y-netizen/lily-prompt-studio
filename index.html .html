@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#f8f3f6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Lily Prompt">
+<title>Lily Prompt Studio</title>
+<style>
+:root{
+  --bg:#f8f4f7;
+  --paper:#fffdfd;
+  --ink:#312a30;
+  --muted:#81777f;
+  --line:#eadfe6;
+  --pink:#d6a6b5;
+  --pink2:#f3e5ea;
+  --lav:#eee8f3;
+  --gold:#b79d69;
+  --deep:#765e6f;
+  --shadow:0 12px 30px rgba(89,64,77,.10);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{
+  width:100%;height:100%;margin:0;padding:0;
+  background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic","Noto Sans JP",sans-serif;
+  overflow-x:hidden;
+}
+button,input,textarea{font:inherit}
+body{min-height:100dvh}
+.app{
+  width:100vw;min-height:100dvh;
+  padding:
+    max(14px, env(safe-area-inset-top))
+    14px
+    calc(96px + env(safe-area-inset-bottom));
+  background:
+    radial-gradient(circle at 88% 3%, rgba(237,225,232,.95) 0 9%, transparent 10%),
+    linear-gradient(180deg,#fffafc 0%,#f8f3f7 38%,#f6f2f6 100%);
+}
+.hero{
+  position:relative;overflow:hidden;
+  background:rgba(255,255,255,.95);
+  border:1px solid var(--line);
+  border-radius:28px;
+  padding:24px 18px 18px;
+  box-shadow:var(--shadow);
+}
+.lily-art{
+  position:absolute;right:8px;top:4px;
+  width:116px;height:116px;opacity:.30;
+}
+.lily-art:before,.lily-art:after{
+  content:"";position:absolute;border-radius:70% 35% 70% 35%;
+  background:linear-gradient(145deg,#fff,#e9dde5);
+  transform-origin:70% 70%;
+}
+.lily-art:before{width:44px;height:82px;right:32px;top:8px;transform:rotate(30deg)}
+.lily-art:after{width:44px;height:82px;right:10px;top:25px;transform:rotate(78deg)}
+.lily-stem{
+  position:absolute;right:42px;top:60px;width:3px;height:72px;
+  background:#b9b7a3;transform:rotate(18deg);opacity:.55
+}
+.brand{
+  position:relative;z-index:2;
+  font-family:Georgia,"Times New Roman",serif;
+  font-size:clamp(29px,8vw,38px);
+  line-height:1.05;letter-spacing:-.3px;
+}
+.tag{position:relative;z-index:2;margin-top:8px;font-size:14px;color:var(--muted)}
+.search{
+  width:100%;height:58px;margin-top:20px;
+  border:1px solid var(--line);border-radius:18px;
+  background:#fff;padding:0 16px;font-size:17px;outline:none;
+  box-shadow:inset 0 1px 0 rgba(0,0,0,.01)
+}
+.quick{
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:11px
+}
+.quick button{
+  height:50px;border:0;border-radius:16px;font-weight:600
+}
+.primary{background:linear-gradient(180deg,#c98fa2,#bb7e93);color:white}
+.soft{background:#f2edf4;color:#5d515e}
+.gold{background:#f8f1e6;color:#7a6745}
+.categories{
+  display:flex;gap:9px;overflow-x:auto;padding:15px 1px 1px;
+  scrollbar-width:none;
+}
+.categories::-webkit-scrollbar{display:none}
+.chip{
+  flex:0 0 auto;border:1px solid var(--line);background:white;
+  border-radius:999px;padding:10px 15px;color:#675c65
+}
+.chip.active{background:#d8a5b5;color:white;border-color:#d8a5b5}
+.section{
+  display:flex;align-items:center;justify-content:space-between;
+  margin:19px 2px 10px
+}
+.section h2{margin:0;font-size:19px}
+.count{font-size:12px;color:var(--muted)}
+.list{display:flex;flex-direction:column;gap:13px}
+.card{
+  background:rgba(255,255,255,.96);
+  border:1px solid var(--line);
+  border-radius:24px;
+  padding:18px 17px;
+  box-shadow:0 10px 24px rgba(89,64,77,.07)
+}
+.card-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.card h3{font-size:20px;line-height:1.35;margin:0 0 6px}
+.meta{display:inline-block;font-size:12px;color:#7f6d77;background:#f7eef2;border-radius:999px;padding:5px 9px}
+.star{border:0;background:none;font-size:24px;color:#c9bcc4;padding:0 2px}
+.star.on{color:var(--gold)}
+.preview{
+  margin-top:14px;padding:14px;
+  background:#fcfafc;border:1px solid #f0e9ed;border-radius:17px;
+  font-size:14px;line-height:1.75;color:#655a62;
+  white-space:pre-wrap;max-height:122px;overflow:hidden
+}
+.actions{display:grid;grid-template-columns:1.2fr .8fr;gap:9px;margin-top:13px}
+.actions button{height:48px;border:0;border-radius:15px;font-weight:600}
+.nav{
+  position:fixed;z-index:40;
+  left:0;right:0;bottom:0;
+  width:100vw;
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:4px;
+  padding:9px 8px calc(9px + env(safe-area-inset-bottom));
+  background:rgba(255,255,255,.96);
+  border-top:1px solid var(--line);
+  box-shadow:0 -10px 25px rgba(64,48,58,.08);
+  backdrop-filter:blur(18px)
+}
+.nav button{
+  border:0;background:transparent;color:#756b72;
+  border-radius:15px;padding:7px 2px;font-size:11px
+}
+.nav button.active{background:#f4e8ed;color:#a8647c}
+.nav span{display:block;font-size:21px;margin-bottom:2px}
+.modal{
+  position:fixed;inset:0;z-index:80;
+  display:none;align-items:flex-end;justify-content:center;
+  background:rgba(44,35,42,.32)
+}
+.modal.show{display:flex}
+.sheet{
+  width:100vw;max-height:94dvh;overflow:auto;
+  background:linear-gradient(180deg,#fbf8fa,#f7f2f6);
+  border-radius:28px 28px 0 0;
+  padding:20px 14px calc(26px + env(safe-area-inset-bottom));
+  box-shadow:0 -18px 48px rgba(0,0,0,.16)
+}
+.handle{width:42px;height:5px;border-radius:999px;background:#d8ced5;margin:0 auto 14px}
+.sheet-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.sheet-head h2{margin:0;font-size:23px}
+.close{border:1px solid var(--line);background:white;border-radius:14px;padding:9px 12px}
+.field{margin:14px 0}
+.field label,.out-label{display:block;font-size:13px;color:var(--muted);margin:0 0 7px 2px}
+.text,.area{
+  width:100%;border:1px solid var(--line);background:white;
+  border-radius:16px;padding:14px 14px;outline:none;font-size:16px
+}
+.area{min-height:240px;resize:vertical;line-height:1.75}
+.vars{display:flex;flex-direction:column;gap:11px;margin:10px 0 16px}
+.output{
+  background:#fff;border:1px solid var(--line);border-radius:18px;
+  padding:15px;min-height:210px;white-space:pre-wrap;line-height:1.78
+}
+.sheet-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.sheet-actions button{height:50px;border:0;border-radius:15px;font-weight:600}
+.danger{background:#fff0f1;color:#9a4b59}
+.empty{text-align:center;color:var(--muted);padding:44px 10px}
+.toast{
+  position:fixed;left:50%;bottom:calc(86px + env(safe-area-inset-bottom));
+  transform:translateX(-50%);
+  background:#443842;color:white;border-radius:999px;padding:10px 16px;
+  display:none;z-index:120;font-size:13px
+}
+.toast.show{display:block}
+@media(min-width:700px){
+  .app{max-width:480px;margin:0 auto;box-shadow:0 0 40px rgba(0,0,0,.06)}
+  .nav{left:50%;right:auto;transform:translateX(-50%);max-width:480px}
+  .sheet{max-width:480px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <section class="hero">
+    <div class="lily-art"></div><div class="lily-stem"></div>
+    <div class="brand">Lily Prompt Studio</div>
+    <div class="tag">好きと想いを、やさしく整える。</div>
+
+    <input id="search" class="search" type="search" placeholder="プロンプトを検索…">
+
+    <div class="quick">
+      <button id="importBtn" class="soft">読み込み</button>
+      <button id="exportBtn" class="gold">書き出し</button>
+      <button id="newBtn" class="primary">＋ 新規</button>
+    </div>
+
+    <div id="categories" class="categories"></div>
+  </section>
+
+  <div class="section">
+    <h2 id="sectionName">よく使うプロンプト</h2>
+    <div id="count" class="count"></div>
+  </div>
+  <main id="list" class="list"></main>
+</div>
+
+<nav class="nav">
+  <button class="active" data-tab="home"><span>⌂</span>ホーム</button>
+  <button data-tab="all"><span>▦</span>プロンプト</button>
+  <button data-tab="fav"><span>♡</span>お気に入り</button>
+  <button data-tab="settings"><span>⚙</span>設定</button>
+</nav>
+
+<div id="editModal" class="modal">
+  <div class="sheet">
+    <div class="handle"></div>
+    <div class="sheet-head">
+      <h2 id="editHeading">プロンプト作成</h2>
+      <button class="close" data-close="editModal">閉じる</button>
+    </div>
+    <div class="field"><label>タイトル</label><input id="editTitle" class="text" type="text" placeholder="例：noteタイトル作成"></div>
+    <div class="field"><label>カテゴリ</label><input id="editCategory" class="text" type="text" placeholder="例：note"></div>
+    <div class="field"><label>プロンプト本文</label><textarea id="editBody" class="area" placeholder="{{記事テーマ}} のように変数を入れられます"></textarea></div>
+    <div class="sheet-actions">
+      <button id="saveBtn" class="primary">保存</button>
+      <button id="deleteBtn" class="danger">削除</button>
+    </div>
+  </div>
+</div>
+
+<div id="useModal" class="modal">
+  <div class="sheet">
+    <div class="handle"></div>
+    <div class="sheet-head">
+      <h2 id="useHeading">プロンプトを使う</h2>
+      <button class="close" data-close="useModal">閉じる</button>
+    </div>
+    <div id="varFields" class="vars"></div>
+    <div class="out-label">生成されるプロンプト</div>
+    <div id="output" class="output"></div>
+    <div class="sheet-actions" style="grid-template-columns:1fr">
+      <button id="copyBtn" class="primary">コピーする</button>
+    </div>
+  </div>
+</div>
+
+<div id="settingsModal" class="modal">
+  <div class="sheet">
+    <div class="handle"></div>
+    <div class="sheet-head">
+      <h2>設定</h2>
+      <button class="close" data-close="settingsModal">閉じる</button>
+    </div>
+    <div class="card">
+      <h3>全画面アプリ風モード</h3>
+      <div class="preview" style="max-height:none">
+ホーム画面に追加して開くと、Safariのタブ感を減らして、よりアプリらしく使えます。
+データはこの端末のブラウザ内に保存されます。
+      </div>
+    </div>
+  </div>
+</div>
+
+<input id="filePicker" type="file" accept=".json,application/json" hidden>
+<div id="toast" class="toast"></div>
+
+<script>
+const KEY='lily-prompt-studio-fullscreen-v4';
+const starter=[
+{id:crypto.randomUUID(),title:'楽天アフィ・悩み先行投稿',category:'楽天アフィ',favorite:true,body:`{{商品名}}という商品を紹介します。
+この商品を必要としている人が、普段感じている悩みや不満を10個出してください。
+その中から、Threadsで「これ私のことだ」と思ってもらいやすい切り口を3つ選び、
+悩みへの共感から始まる投稿文を作ってください。
+商品の特徴を並べるのではなく、使ったあとの変化が伝わる文章にしてください。`},
+{id:crypto.randomUUID(),title:'noteタイトル作成',category:'note',favorite:true,body:`{{記事テーマ}}についてnoteを書きます。
+想定読者は{{ターゲット}}です。
+
+「誰のための記事か」と「読後どうなるか」が伝わるタイトルを10案作ってください。
+煽りすぎず、やわらかく、でも内容が分かるタイトルにしてください。`},
+{id:crypto.randomUUID(),title:'note構成作成',category:'note',favorite:false,body:`{{記事テーマ}}についてnoteを書きます。
+想定読者は{{ターゲット}}です。
+
+導入→共感→実体験→具体策→まとめ、の流れを基本に、
+各見出しで何を書くかを整理してください。`},
+{id:crypto.randomUUID(),title:'note本文リライト',category:'note',favorite:false,body:`以下の本文を、やわらかく自然な文章にリライトしてください。
+
+{{本文}}
+
+押し売り感を出さず、実体験や本人らしい言葉は残してください。
+文章を整えすぎてAIっぽくしないでください。`},
+{id:crypto.randomUUID(),title:'Threads告知文',category:'Threads',favorite:false,body:`{{紹介したい内容}}をThreadsで自然に紹介します。
+想定読者は{{ターゲット}}です。
+
+宣伝だけに見えないように、共感や気づきから入り、
+最後に自然にnoteへつながる投稿文を3案作ってください。`},
+{id:crypto.randomUUID(),title:'ROOM紹介文',category:'ROOM',favorite:false,body:`{{商品名}}を楽天ROOMで紹介します。
+想定する人は{{ターゲット}}です。
+
+どんな場面で便利か、どんな悩みが軽くなるかが伝わる短い紹介文を3案作ってください。
+購入していない商品は、使用したように書かないでください。`},
+{id:crypto.randomUUID(),title:'ココナラ出品文整理',category:'ココナラ',favorite:false,body:`{{サービス内容}}をココナラに出品します。
+想定購入者は{{ターゲット}}です。
+
+サービス内容・誰向けか・購入後に得られること・注意点が分かりやすく伝わる説明文に整えてください。
+大げさな表現や煽りは使わないでください。`}
+];
+
+let prompts=load(),current='すべて',tab='home',editingId=null,usingId=null;
+function load(){try{const d=JSON.parse(localStorage.getItem(KEY));if(Array.isArray(d))return d}catch(e){} localStorage.setItem(KEY,JSON.stringify(starter));return starter}
+function save(){localStorage.setItem(KEY,JSON.stringify(prompts))}
+function esc(s=''){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1400)}
+function cats(){return ['すべて','お気に入り',...Array.from(new Set(prompts.map(p=>p.category).filter(Boolean))).sort()]}
+function renderCats(){categories.innerHTML='';cats().forEach(c=>{const b=document.createElement('button');b.className='chip'+(current===c?' active':'');b.textContent=c;b.onclick=()=>{current=c;tab='all';syncNav();render()};categories.appendChild(b)})}
+function syncNav(){document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab))}
+function render(){
+  renderCats();
+  const q=search.value.trim().toLowerCase();
+  let items=prompts.filter(p=>{
+    const ok=current==='すべて'?true:current==='お気に入り'?p.favorite:p.category===current;
+    return ok && (!q||(p.title+' '+p.category+' '+p.body).toLowerCase().includes(q))
+  });
+  if(tab==='home')items=[...prompts.filter(p=>p.favorite),...prompts.filter(p=>!p.favorite)].slice(0,7);
+  if(tab==='fav')items=prompts.filter(p=>p.favorite);
+  sectionName.textContent=tab==='home'?'よく使うプロンプト':tab==='fav'?'お気に入り':'プロンプト';
+  count.textContent=items.length+'件';
+  list.innerHTML='';
+  if(!items.length){list.innerHTML='<div class="empty">まだここにはありません。</div>';return}
+  items.forEach(p=>{
+    const d=document.createElement('article');d.className='card';
+    const vars=[...new Set([...p.body.matchAll(/\{\{\s*([^{}]+?)\s*\}\}/g)].map(x=>x[1].trim()))];
+    d.innerHTML=`<div class="card-head"><div><h3>${esc(p.title)}</h3><div class="meta">${esc(p.category)} ・ ${vars.length}個の変数</div></div><button class="star ${p.favorite?'on':''}">★</button></div><div class="preview">${esc(p.body)}</div><div class="actions"><button class="primary use">使う</button><button class="soft edit">編集</button></div>`;
+    d.querySelector('.star').onclick=()=>{p.favorite=!p.favorite;save();render()};
+    d.querySelector('.use').onclick=()=>openUse(p.id);
+    d.querySelector('.edit').onclick=()=>openEdit(p.id);
+    list.appendChild(d)
+  })
+}
+function modal(id,on=true){document.getElementById(id).classList.toggle('show',on)}
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>modal(b.dataset.close,false));
+newBtn.onclick=()=>openEdit();
+search.addEventListener('input',render);
+function openEdit(id=null){editingId=id;const p=id?prompts.find(x=>x.id===id):{title:'',category:'',body:''};editHeading.textContent=id?'プロンプト編集':'プロンプト作成';editTitle.value=p.title;editCategory.value=p.category;editBody.value=p.body;deleteBtn.style.display=id?'block':'none';modal('editModal',true)}
+saveBtn.onclick=()=>{const title=editTitle.value.trim(),category=editCategory.value.trim()||'未分類',body=editBody.value.trim();if(!title||!body){toast('タイトルと本文を入れてね');return}if(editingId)Object.assign(prompts.find(x=>x.id===editingId),{title,category,body});else prompts.unshift({id:crypto.randomUUID(),title,category,body,favorite:false});save();modal('editModal',false);render();toast('保存しました')}
+deleteBtn.onclick=()=>{if(editingId&&confirm('このプロンプトを削除しますか？')){prompts=prompts.filter(x=>x.id!==editingId);save();modal('editModal',false);render();toast('削除しました')}}
+function varsFrom(body){return [...new Set([...body.matchAll(/\{\{\s*([^{}]+?)\s*\}\}/g)].map(x=>x[1].trim()))]}
+function buildOutput(){const p=prompts.find(x=>x.id===usingId);let s=p.body;document.querySelectorAll('[data-var]').forEach(i=>{const n=i.dataset.var.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');s=s.replace(new RegExp('\\{\\{\\s*'+n+'\\s*\\}\\}','g'),i.value)});output.textContent=s}
+function openUse(id){usingId=id;const p=prompts.find(x=>x.id===id);useHeading.textContent=p.title;varFields.innerHTML='';varsFrom(p.body).forEach(v=>{const d=document.createElement('div');d.innerHTML=`<label>${esc(v)}</label><input class="text" data-var="${esc(v)}" placeholder="${esc(v)}を入力">`;d.querySelector('input').addEventListener('input',buildOutput);varFields.appendChild(d)});buildOutput();modal('useModal',true)}
+copyBtn.onclick=async()=>{try{await navigator.clipboard.writeText(output.textContent);toast('コピーしました')}catch(e){toast('長押しでコピーしてください')}}
+exportBtn.onclick=()=>{const blob=new Blob([JSON.stringify(prompts,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='lily-prompt-studio-backup.json';a.click()}
+importBtn.onclick=()=>filePicker.click();
+filePicker.onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());if(!Array.isArray(d))throw 0;prompts=d;save();render();toast('読み込みました')}catch(err){toast('読み込めないファイルです')}e.target.value=''}
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;if(tab==='settings'){modal('settingsModal',true);tab='home'}else if(tab==='fav')current='お気に入り';else current='すべて';syncNav();render()})
+syncNav();render();
+</script>
+</body>
+</html>
